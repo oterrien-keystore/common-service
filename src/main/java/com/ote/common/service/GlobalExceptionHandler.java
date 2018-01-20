@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 @RestControllerAdvice
 @Slf4j
@@ -18,7 +19,15 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ResponseBody
     public Error handle(Throwable exception) {
-        log.error(exception.getMessage(), exception);
+        log.warn(exception.getMessage(), exception);
+        return new Error(exception.getMessage());
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseBody
+    public Error handle(MethodArgumentTypeMismatchException exception) {
+        log.info(exception.getMessage(), exception);
         return new Error(exception.getMessage());
     }
 
@@ -26,7 +35,7 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ResponseBody
     public Error handle(MethodArgumentNotValidException exception) {
-        log.error(exception.getMessage(), exception);
+        log.info(exception.getMessage(), exception);
         Error error = new Error();
         exception.getBindingResult().getFieldErrors().stream().
                 map(p -> p.getObjectName() + ": " + p.getField() + " " + p.getDefaultMessage()).
@@ -38,7 +47,7 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     @ResponseBody
     public Error handle(AccessDeniedException exception) {
-        log.error(exception.getMessage(), exception);
+        log.info(exception.getMessage(), exception);
         return new Error(exception.getMessage());
     }
 }
